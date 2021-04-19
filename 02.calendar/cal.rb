@@ -22,10 +22,6 @@ days = (start_day.day..end_day.day)
 wday = start_day.wday
 space = wday * 3
 first_week = 7 - wday
-second_week = first_week + 7
-third_week = first_week + (7 * 2)
-fourth_week = first_week + (7 * 3)
-fifth_week = first_week + (7 * 4)
 
 puts "#{month}月".rjust(8) + " " + "#{year}"
 puts "日 月 火 水 木 金 土"
@@ -36,8 +32,7 @@ days.each do |day|
   else
     print day.to_s.rjust(2) + " "
   end
-  case day
-  when first_week,second_week,third_week,fourth_week,fifth_week
+  if day % 7 == first_week
     print "\n"
   end
 end
