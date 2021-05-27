@@ -6,10 +6,7 @@ require 'date'
 require 'etc'
 
 def calculate_bolocks(files)
-  total = 0
-  files.each do |file|
-    total += File.stat(file).blocks
-  end
+  total = files.map { |file| File.stat(file).blocks }.sum
   puts "total #{total}"
 end
 
@@ -19,21 +16,41 @@ def gsub_date(split_date)
 end
 
 def reconstruct(split_date, mtime)
-  if split_date[0].to_i < Date.today.year.to_i
-    "#{split_date[1]} #{split_date[2]} #{(split_date[0]).to_s.rjust(5)}"
+  time = "#{split_date[1]} #{split_date[2]}"
+  "#{time} " + if split_date[0].to_i < Date.today.year.to_i
+                 split_date[0].to_s.rjust(5)
+               else
+                 mtime[1].to_s
+               end
+end
+
+def change_file_type(mode)
+  if mode.start_with? '40'
+    'd'
   else
-    "#{split_date[1]} #{split_date[2]} #{mtime[1]}"
+    '-'
   end
 end
 
-def to_permission(mode)
-  if mode.start_with?('40')
-    mode.gsub!(/^40/, 'd')
-  elsif mode.start_with?('100')
-    mode.gsub!(/^100/, '-')
+def slice_mode(mode)
+  if mode.start_with? '40'
+    mode.slice(2..4)
+  else
+    mode.slice(3..5)
   end
-  mode.gsub!(/\d/, '7' => 'rwx', '6' => 'rw-', '5' => 'r-x', '4' => 'r--', '3' => '-wx', '2' => '-w-', '1' => '--x',
-                   '0' => '---')
+end
+
+def change_permission(new_mode)
+  permissions = new_mode.chars.map do |permission|
+    {
+      '0' => '---', '1' => '--x', '2' => '-w-', '3' => '-wx', '4' => 'r--', '5' => 'r-x', '6' => 'rw-', '7' => 'rwx'
+    }[permission]
+  end
+  permissions.join
+end
+
+def string_max_size(files)
+  files.map { |file| File.stat(file).max }
 end
 
 def calculate_column_size(files)
@@ -61,7 +78,9 @@ if params[:l]
   calculate_bolocks(files)
   files.each do |file|
     file_stat = File::Stat.new(file)
-    mode = to_permission(file_stat.mode.to_s(8))
+    mode = file_stat.mode.to_s(8)
+    new_mode = slice_mode(mode)
+    attribute = "#{change_file_type(mode)}#{change_permission(new_mode)}"
     nlink = file_stat.nlink.to_s.rjust(2)
     user_name = Etc.getpwuid(file_stat.uid).name.to_s
     group_name = Etc.getgrgid(file_stat.gid).name.to_s
@@ -75,19 +94,12 @@ if params[:l]
 
     new_mtime = reconstruct(split_date, mtime)
 
-    puts "#{mode} #{nlink} #{user_name.ljust(name_size)}  #{group_name} #{file_size.rjust(5)} #{new_mtime} #{file}"
+    puts "#{attribute} #{nlink} #{user_name.ljust(name_size)}  #{group_name} #{file_size.rjust(5)} #{new_mtime} #{file}"
   end
 else
-  string_sizes = []
-
-  files.each do |file|
-    string_sizes << file.size
-  end
-
-  max_size = string_sizes.max
-
   first_column_size = calculate_column_size(files)
   rows = files.each_slice(first_column_size).to_a
+  max_size = string_max_size(files)
 
   rows.each do |row|
     next unless row.size < first_column_size
