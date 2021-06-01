@@ -50,7 +50,7 @@ def change_permission(new_mode)
 end
 
 def string_max_size(files)
-  files.map { |file| File.stat(file).max }
+  files.map { |file| file.size }.max
 end
 
 def calculate_column_size(files)
