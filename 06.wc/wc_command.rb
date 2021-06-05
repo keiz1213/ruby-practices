@@ -18,48 +18,40 @@ params = {}
 opt.on('-l') { |v| params[:l] = v }
 opt.parse!(ARGV)
 
-if params[:l] && ARGV == []
-  lines = 0
-  ARGF.each do |stdin|
-    lines += stdin.count("\n")
-  end
-  puts lines.to_s.rjust(8).to_s
-elsif params[:l]
-  ARGV.each do |file|
-    File.open(file) do |file_name|
-      lines = file_name.readlines
-      puts "#{lines.size.to_s.rjust(8)} #{file}"
-
-      total_lines << lines.size if ARGV.size >= 2
-
-      puts "#{total_lines.sum.to_s.rjust(8)} total" if total_lines.size == ARGV.size
-    end
-  end
-elsif ARGV == []
+if ARGV == []
   ARGF.each do |stdin|
     lines += stdin.count("\n")
     words += stdin.scan(/\S+/).count
     byte += stdin.bytesize
   end
-  puts lines.to_s.rjust(8) + words.to_s.rjust(8) + byte.to_s.rjust(8)
-else
-  ARGV.each do |file|
-    File.open(file) do |file_name|
-      lines = file_name.readlines
-      words = 0
-      lines.each do |line|
-        words += line.scan(/\S+/).count
-      end
-      byte = File::Stat.new(file_name).size
-      puts "#{lines.size.to_s.rjust(8)}#{words.to_s.rjust(8)}#{byte.to_s.rjust(8)} #{file}"
+  if params[:l]
+    puts lines.to_s.rjust(8)
+  else
+    puts lines.to_s.rjust(8) + words.to_s.rjust(8) + byte.to_s.rjust(8)
+  end
+end
 
-      if ARGV.size >= 2
-        total_lines << lines.size
-        total_words << words
-        total_byte << byte
-      end
-
-      puts "#{total_lines.sum.to_s.rjust(8)}#{total_words.sum.to_s.rjust(8)}#{total_byte.sum.to_s.rjust(8)} total" if total_byte.size == ARGV.size
+ARGV.each do |file|
+  File.open(file) do |file_name|
+    lines = file_name.readlines
+    words = 0
+    lines.each do |line|
+      words += line.scan(/\S+/).count
     end
+    byte = File::Stat.new(file_name).size
+  end
+
+  if ARGV.size >= 2
+    total_lines << lines.size
+    total_words << words
+    total_byte << byte
+  end
+
+  if params[:l]
+    puts "#{lines.size.to_s.rjust(8)} #{file}"
+    puts "#{total_lines.sum.to_s.rjust(8)} total" if total_lines.size == ARGV.size
+  else
+    puts "#{lines.size.to_s.rjust(8)}#{words.to_s.rjust(8)}#{byte.to_s.rjust(8)} #{file}"
+    puts "#{total_lines.sum.to_s.rjust(8)}#{total_words.sum.to_s.rjust(8)}#{total_byte.sum.to_s.rjust(8)} total" if total_byte.size == ARGV.size
   end
 end
