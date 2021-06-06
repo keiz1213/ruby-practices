@@ -3,7 +3,6 @@
 
 require 'optparse'
 
-lines = 0
 words = 0
 byte = 0
 
@@ -19,6 +18,7 @@ opt.on('-l') { |v| params[:l] = v }
 opt.parse!(ARGV)
 
 if ARGV == []
+  lines = 0
   ARGF.each do |stdin|
     lines += stdin.count("\n")
     words += stdin.scan(/\S+/).count
@@ -34,10 +34,7 @@ end
 ARGV.each do |file|
   File.open(file) do |file_name|
     lines = file_name.readlines
-    words = 0
-    lines.each do |line|
-      words += line.scan(/\S+/).count
-    end
+    words = lines.sum { |line| line.scan(/\S+/).count }
     byte = File::Stat.new(file_name).size
   end
 
