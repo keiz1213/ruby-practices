@@ -3,13 +3,6 @@
 
 require 'optparse'
 
-words = 0
-byte = 0
-
-total_lines = []
-total_words = []
-total_byte = []
-
 opt = OptionParser.new
 
 params = {}
@@ -19,6 +12,8 @@ opt.parse!(ARGV)
 
 if ARGV == []
   lines = 0
+  words = 0
+  byte = 0
   ARGF.each do |stdin|
     lines += stdin.count("\n")
     words += stdin.scan(/\S+/).count
@@ -30,6 +25,10 @@ if ARGV == []
     puts lines.to_s.rjust(8) + words.to_s.rjust(8) + byte.to_s.rjust(8)
   end
 end
+
+total_lines = []
+total_words = []
+total_byte = []
 
 ARGV.each do |file|
   File.open(file) do |file_name|
