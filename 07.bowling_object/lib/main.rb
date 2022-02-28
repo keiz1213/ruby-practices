@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
-require './lib/Command'
-require './lib/Shot'
-require './lib/Frame'
-require './lib/Game'
+require_relative './command'
+require_relative './shot'
+require_relative './frame'
+require_relative './game'
 
 input = Command.new(ARGV[0])
 marks = input.make_marks
 game = Game.new(marks)
-game.calculate
+point = game.calculate
+puts point

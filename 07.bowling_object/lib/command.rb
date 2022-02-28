@@ -7,9 +7,7 @@ class Command
 
   def make_marks
     marks = @input.split(',')
-    marks.each_with_index do |mark, index|
-      marks.insert(index + 1, '0') if mark == 'X'
-    end
+    marks.map! { |mark| mark == 'X' ? [mark, 0] : mark }.flatten!
     marks.each_slice(2).to_a
   end
 end
