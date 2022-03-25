@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'optparse'
+require 'pathname'
 
 class Input
   attr_reader :argv, :options
@@ -18,12 +19,11 @@ class Input
     @options = params
   end
 
-  def path
+  def paths
     if argv[0].nil?
-      Dir.pwd
+      [Pathname(Dir.pwd)]
     elsif Dir.pwd != argv[0]
-      Dir.chdir(argv[0])
-      Dir.pwd
+      argv.map { |arg| Pathname(arg) }
     end
   end
 end

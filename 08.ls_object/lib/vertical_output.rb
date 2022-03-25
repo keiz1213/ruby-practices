@@ -1,10 +1,27 @@
 # frozen_string_literal: true
 
-class Container
-  attr_reader :entries
+require_relative './input'
+require_relative './entry'
+require_relative './builder'
 
-  def initialize(path)
-    @entries = Dir.entries(path).sort.map { |name| Entry.new(name) }
+class VerticalOutput
+  attr_reader :builder, :options
+
+  def initialize(path, options)
+    @builder = Builder.new(path, options)
+    @options = options
+  end
+
+  def display
+    entries = builder.build_entries
+    if options[:l]
+      output_lines(entries)
+    else
+      column_size = column_size(entries)
+      rows = create_rows(column_size, entries)
+      max_name = entries.map { |entry| entry.name.size }.max
+      output_rows(rows, max_name)
+    end
   end
 
   def column_size(entries)
@@ -16,22 +33,15 @@ class Container
     end
   end
 
-  def create_rows(column_size)
+  def create_rows(column_size, entries)
     rows = entries.each_slice(column_size).to_a
-    rows.map do |row|
-      next unless row.size < column_size
-
-      (column_size - row.size).times do
-        row << ' '
-      end
-    end
-    rows.transpose
+    rows[0].zip(*rows[1..])
   end
 
   def output_rows(rows, max_name)
     rows.each do |row|
       row.each do |entry|
-        next if entry == ' '
+        next if entry.nil?
 
         print entry.name.ljust(max_name + 5)
       end
@@ -40,8 +50,10 @@ class Container
   end
 
   def output_lines(entries)
-    total = entries.map(&:blocks).sum
-    puts "total #{total}"
+    if builder.paths[0].ftype == 'directory'
+      total = entries.map(&:blocks).sum
+      puts "total #{total}"
+    end
     link_max = entries.map { |entry| entry.link.size }.max
     owner_max = entries.map { |entry| entry.owner.size }.max
     group_max = entries.map { |entry| entry.group.size }.max
