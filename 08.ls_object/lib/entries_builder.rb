@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Builder
+class EntriesBuilder
   attr_reader :paths, :options
 
   def initialize(paths, options)

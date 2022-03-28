@@ -2,18 +2,18 @@
 
 require_relative './input'
 require_relative './entry'
-require_relative './builder'
+require_relative './entries_builder'
 
 class VerticalOutput
-  attr_reader :builder, :options
+  attr_reader :entries_builder, :options
 
   def initialize(path, options)
-    @builder = Builder.new(path, options)
+    @entries_builder = EntriesBuilder.new(path, options)
     @options = options
   end
 
   def display
-    entries = builder.build_entries
+    entries = entries_builder.build_entries
     if options[:l]
       output_lines(entries)
     else
@@ -50,7 +50,7 @@ class VerticalOutput
   end
 
   def output_lines(entries)
-    if builder.paths[0].ftype == 'directory'
+    if entries_builder.paths[0].ftype == 'directory'
       total = entries.map(&:blocks).sum
       puts "total #{total}"
     end
