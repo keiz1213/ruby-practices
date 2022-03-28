@@ -5,13 +5,15 @@ require_relative '../lib/vertical_output'
 
 class LsCommandTest < Minitest::Test
 
-  TARGET_PATHNAME = 'test/fixtures'
+  TARGET_PATHNAME = 'fixtures'
+
+  Dir.chdir('test')
 
   def test_without_argument
     expected = <<~TEXT
-    bar.rb     foo.rb     
-    baz.rb     lib        
-    bin        test       
+    bar.rb                 foo.rb                 
+    baz.rb                 ls_command_test.rb     
+    fixtures               
     TEXT
     input = Input.new(ARGV)
     paths = input.paths
@@ -20,7 +22,7 @@ class LsCommandTest < Minitest::Test
     assert_output(expected) { output.display }
   end
 
-  def test_argument_with_path_for_a_file
+  def test_argument_with_file_name
     expected = <<~TEXT
     foo.rb     
     TEXT
@@ -33,7 +35,7 @@ class LsCommandTest < Minitest::Test
     ARGV.clear
   end
 
-  def test_argument_with_path_for_files
+  def test_argument_with_file_names
     expected = <<~TEXT
     foo.rb     baz.rb     
     bar.rb     
@@ -49,7 +51,7 @@ class LsCommandTest < Minitest::Test
     ARGV.clear
   end
 
-  def test_argument_with_path_and_L_option_for_files
+  def test_argument_with_file_names_and_L_option
     expected = `ls -l foo.rb bar.rb baz.rb`
     ARGV << 'bar.rb'
     ARGV << 'baz.rb'
@@ -63,7 +65,7 @@ class LsCommandTest < Minitest::Test
     ARGV.clear
   end
 
-  def test_argument_with_path_for_directory
+  def test_argument_with_path
     expected = <<~TEXT
     1111111.txt            baz.rb                 
     111111111111111111     foo.rb                 
@@ -78,7 +80,7 @@ class LsCommandTest < Minitest::Test
     ARGV.clear
   end
 
-  def test_argument_with_path_and_R_option_for_directory
+  def test_argument_with_path_and_R_option
     expected = <<~TEXT
     zzzzzzzzzzzz.txt       bar.rb                 
     foo.rb                 111111111111111111     
@@ -94,7 +96,7 @@ class LsCommandTest < Minitest::Test
     ARGV.clear
   end
 
-  def test_argument_with_path_and_A_option_for_directory
+  def test_argument_with_path_and_A_option
     expected = <<~TEXT
     .                      bar.rb                 
     ..                     baz.rb                 
@@ -111,7 +113,7 @@ class LsCommandTest < Minitest::Test
     ARGV.clear
   end
 
-  def test_argument_with_path_and_L_option_for_directory
+  def test_argument_with_path_and_L_option
     expected = `ls -l #{TARGET_PATHNAME}`
     ARGV << TARGET_PATHNAME
     ARGV << '-l'
@@ -123,7 +125,7 @@ class LsCommandTest < Minitest::Test
     ARGV.clear
   end
 
-  def test_argument_with_path_and_all_option_for_directory
+  def test_argument_with_path_and_all_option
     expected = `ls -arl #{TARGET_PATHNAME}`
     ARGV << TARGET_PATHNAME
     ARGV << '-arl'
